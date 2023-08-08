@@ -18,6 +18,8 @@ import { ChangeEvent, useState } from 'react';
 import { Textarea } from '../ui/textarea';
 import { isBase64Image } from '@/lib/utils';
 import { useUploadThing } from '@/lib/uploadthing';
+import { updateUser } from '@/lib/actions/user.actions';
+import { useRouter, usePathname } from 'next/navigation';
 
 
 interface Props {
@@ -35,6 +37,8 @@ interface Props {
 const AccountProfile = ({user, btnTitle} : Props ) => {
   const [files, setFiles]=useState<File[]>([])
   const { startUpload } = useUploadThing("media");
+  const router = useRouter();
+  const pathname = usePathname();
 
         // 1. Define your form.
     const form = useForm({
@@ -81,8 +85,22 @@ const AccountProfile = ({user, btnTitle} : Props ) => {
         values.profile_photo = imgRes[0].fileUrl;
       }
     }
-  }
 
+    await updateUser({
+      userId:user.id,
+      username: values.username,
+      name: values.name,
+      bio: values.bio,
+      image:values.profile_photo,
+      path: pathname
+    });
+
+    if(pathname === '/profile/edit') {
+      router.back();
+    }else {
+      router.push('/');
+    }
+  }
 
   return (
     <Form {...form}>
